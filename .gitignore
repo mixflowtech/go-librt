@@ -1,0 +1,10 @@
+# jetbrains
+.idea/
+
+vendor/
+dist/
+*.exe
+
+
+# vgo
+go.sum
