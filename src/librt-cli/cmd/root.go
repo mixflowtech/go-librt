@@ -3,6 +3,7 @@ package cmd
 import (
 	//"fmt"
 
+	"github.com/mixflowtech/go-librt/logger"
 	"github.com/spf13/cobra"
 	// "github.com/tliron/puccini/common"
 	//"github.com/tliron/puccini/format"
@@ -48,6 +49,10 @@ var rootCmd = &cobra.Command{
 			cmd.GenBashCompletionFile(bashCompletionTo)
 		}
 		*/
+		log := logger.New("test")
+		log.Configure("fancy", true, "")
+		log.Info("KBFS version %s","1.0")
+		log.Debug("KBFS version %s","1.0")
 	},
 }
 

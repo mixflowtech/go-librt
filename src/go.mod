@@ -17,13 +17,15 @@ replace (
 
 require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/keybase/backoff v1.0.0 // indirect
 	github.com/keybase/go-codec v0.0.0-20180928230036-164397562123 // indirect
 	github.com/keybase/go-framed-msgpack-rpc v0.0.0-20181210150150-a27a4f7712dd
 	github.com/keybase/go-logging v0.0.0-20160323223538-f3c7c3c1605e
 	github.com/keybase/msgpackzip v0.0.0-20181207162438-80ab1a86b484 // indirect
 	github.com/mattn/go-isatty v0.0.4
-	github.com/smartystreets/goconvey v0.0.0-20170602164621-9e8dc3f972df // indirect
+	github.com/smartystreets/assertions v0.0.0-20190116191733-b6c0e53d7304 // indirect
+	github.com/smartystreets/goconvey v0.0.0-20170602164621-9e8dc3f972df
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/stretchr/testify v1.3.0
