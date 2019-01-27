@@ -1,9 +1,51 @@
 package cmd
 
 import (
+	context "golang.org/x/net/context"
+	"log"
+	"time"
+
+	"github.com/keybase/go-framed-msgpack-rpc/rpc"
+	"github.com/mixflowtech/go-librt/engine/protocol/mxengine1"
 	"github.com/mixflowtech/go-librt/logger"
 	"github.com/spf13/cobra"
 )
+
+type RPCConnectHandler struct {
+}
+
+func (c *RPCConnectHandler) OnConnect(ctx context.Context,
+	conn *rpc.Connection, client rpc.GenericClient, _ *rpc.Server) error {
+	log.Printf("OnConnect\n")
+	return nil
+}
+
+func (c *RPCConnectHandler) OnDoCommandError(err error, nextTime time.Duration) {
+	log.Printf("OnDoCommandError\n")
+}
+
+func (c *RPCConnectHandler) OnDisconnected(ctx context.Context, status rpc.DisconnectStatus) {
+	log.Printf("OnDisconnected\n")
+}
+
+func (c *RPCConnectHandler) OnConnectError(err error, dur time.Duration) {
+	log.Printf("OnConnectError\n")
+}
+
+func (c *RPCConnectHandler) ShouldRetry(name string, err error) bool {
+	log.Printf("ShouldRetry\n")
+	return true
+}
+
+func (c *RPCConnectHandler) ShouldRetryOnConnect(err error) bool {
+	log.Printf("ShouldRetryOnConnect\n")
+	return true
+}
+
+func (c *RPCConnectHandler) HandlerName() string {
+	return "RPCConnectHandler"
+}
+
 
 // TODO: move global flags to ...
 var g_flagDebug bool
@@ -17,23 +59,52 @@ func init() {
 }
 
 var logSendCmd = &cobra.Command{
-	Use:   "send [COMMAND or JavaScript PATH or URL] [[Clout PATH or URL]]",
+	Use:   "send [message] [log server, fmprpc://]",
 	Short: "Execute JavaScript in Clout",
 	Long:  ``,
 	Args:  cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		message := args[0]
-		/*
+
+		log := logger.New("librt.cli.log_send")
+		log.Configure("", g_flagDebug, g_logTo)
 
 		if len(args) == 2 {
-			target_host = args[1]
-		}
-		*/
-		if len(args) == 2 {
-			// var target_host = args[1]
+			var targetHost = args[1]
+			uri, err := rpc.ParseFMPURI(targetHost)
+			if err != nil {
+				log.Fatalf("%v", err)
+			}
+
+			opts := rpc.ConnectionOpts{
+				DontConnectNow: true,
+			}
+
+			logOpts := rpc.NewStandardLogOptions("", nil)
+			trans := rpc.NewConnectionTransport(uri,
+				rpc.NewSimpleLogFactory(nil, logOpts),
+				nil, rpc.DefaultMaxFrameLength)
+			// handler := &RPCConnectHandler{}
+
+			// FIXME: add NewTLSConnection
+			// conn := rpc.NewTLSConnection(rpc.NewFixedRemote(*srvAddr), cert, nil,
+			// 	handler, rpc.NewSimpleLogFactory(nil, logOpts), nullLogOutput{}, rpc.DefaultMaxFrameLength, opts)
+
+			conn := rpc.NewConnectionWithTransport(&RPCConnectHandler{}, trans, nil,
+				logger.LogOutputWithDepthAdder{Logger: logger.New("demo.client")}, opts)
+
+			client := mxengine1.LogClient{Cli: conn.GetClient()}
+
+			// call DoLog
+			arg := mxengine1.DoLogArg{
+				SessionID: 1001,
+				Message: message,
+			}
+			_ = client.DoLog(context.Background(), arg)
+			// check err
+
 		} else {
-			log := logger.New("librt-cli.log.send")
-			log.Configure("", g_flagDebug, g_logTo)
+			// local mode.
 			// debug, info, notice, warn, error, critical, fatal
 			// TODO: apply g_logLevel flag
 			switch g_logLevel {

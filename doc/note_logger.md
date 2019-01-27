@@ -29,7 +29,7 @@
 
 ### *Server*
 
-> $(CMD) log serve --port $port --host $host 
+> $(CMD) log serve --listen $laddr
 
 启动日志采集服务，默认端口为 13399，默认监听 0.0.0.0 (理论上应该是 localhost，但是考虑到本身就是日志服务...)
 

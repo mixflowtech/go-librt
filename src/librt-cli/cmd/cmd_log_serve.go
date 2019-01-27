@@ -2,27 +2,39 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	//"github.com/mixflowtech/go-librt/logger"
+	"github.com/mixflowtech/go-librt/logger"
+	"github.com/mixflowtech/go-librt/engine"
+	"github.com/mixflowtech/go-librt/engine/impl"
 )
 
+var g_laddr string
+
 func init() {
-	// execCmd.Flags().StringVarP(&output, "output", "o", "", "output to file or directory (default is stdout)")
+	// TODO: add flag `debug`...
+	logServeCmd.Flags().StringVarP(&g_laddr, "listen", "l", ":13399", "Address listen on (default is `0.0.0.0:13399` )")
 }
 
 var logServeCmd = &cobra.Command{
-	Use:   "serve [COMMAND or JavaScript PATH or URL] [[Clout PATH or URL]]",
+	Use:   "serve",
 	Short: "Execute JavaScript in Clout",
 	Long:  ``,
-	Args:  cobra.RangeArgs(1, 2),
+	Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		/*
-		name := args[0]
-
-		var path string
-		if len(args) == 2 {
-			path = args[1]
+		log := logger.New("librt.cli.log_serve")
+		// TODO: reuse flag with log.send
+		log.Configure("", true, "")
+		srv, err := impl.NewLog1Server()
+		if err != nil {
+			log.Fatalf("%v", err)
 		}
-		*/
+		d, err := engine.NewDaemonNoCertTCP(srv, g_laddr)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		log.Info("Log Server listening at %s", g_laddr)
+		err = d.AcceptLoop()
+		//wait for shutdown to be complete
+		d.WaitForShutdown()
 	},
 }
 /*

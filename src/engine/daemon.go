@@ -38,14 +38,31 @@ type Daemon struct {
 }
 
 // NewDaemon constructs a new, named Daemon instance.
-func NewDaemon(f RPCSFactory, cacert []byte, key []byte) (
-		*Daemon, error) {
+func NewDaemonCertTCP(f RPCSFactory, laddr string, cacert []byte, key []byte) (*Daemon, error) {
 	cert, err := tls.X509KeyPair(cacert, key)
 	if err != nil {
 		return nil, err
 	}
 	tlsConfig := tls.Config{Certificates: []tls.Certificate{cert}}
-	listener, err := tls.Listen("tcp", ":8888", &tlsConfig)
+	listener, err := tls.Listen("tcp", laddr, &tlsConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	logOpts := rpc.NewStandardLogOptions("", nil)
+	d := &Daemon{
+		rpcsFactory: f,
+		logFactory:  rpc.NewSimpleLogFactory(nil, logOpts),
+		listener:    listener,
+		conns:       make(map[net.Conn]struct{}),
+		shutdownCh:  make(chan struct{}),
+		doneCh:      make(chan struct{}),
+	}
+	return d, nil
+}
+
+func NewDaemonNoCertTCP(f RPCSFactory, laddr string) (*Daemon, error) {
+	listener, err := net.Listen("tcp", laddr)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +111,7 @@ func (d *Daemon) GetBindAddr() string {
 
 // AcceptLoop accepts incoming connections.
 func (d *Daemon) AcceptLoop() error {
+	// TODO: change to logger mechanism
 	fmt.Printf("daemon bindAddr %s\n", d.GetBindAddr())
 OUTER:
 	for {

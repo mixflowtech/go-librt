@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"fmt"
 	"github.com/keybase/go-framed-msgpack-rpc/rpc"
 	"golang.org/x/net/context"
 
@@ -34,6 +35,7 @@ func (f *Log1Server) Shutdown() {
 
 // func (f *Log1Server) Get(ctx context.Context, arg s3test.GetArg) (res s3test.GetRes, err error) {
 func (f *Log1Server) DoLog(ctx context.Context, arg mxengine1.DoLogArg) (err error) {
+	fmt.Printf("got message %s\n", arg.Message)
 	/*
 	if arg.Size > 0 && len(f.buf) < arg.Size {
 		f.buf = make([]byte, arg.Size)
