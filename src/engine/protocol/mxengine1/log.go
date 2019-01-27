@@ -57,7 +57,7 @@ type LogInterface interface {
 
 func LogProtocol(i LogInterface) rpc.Protocol {
 	return rpc.Protocol{
-		Name: "mx.engine.1.log",
+		Name: "mxengine.1.log",
 		Methods: map[string]rpc.ServeHandlerDescription{
 			"doLog": {
 				MakeArg: func() interface{} {
