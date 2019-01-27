@@ -1,5 +1,6 @@
 # jetbrains
 .idea/
+node_modules
 
 vendor/
 dist/
