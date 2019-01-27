@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mixflowtech/go-librt/librt-cli/cmd"
+	"github.com/mixflowtech/go-librt/src/librt-cli-cli/cmd"
 )
 
 func main() {

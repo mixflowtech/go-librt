@@ -17,3 +17,7 @@ go mod vendor
 
 go build
 
+
+## TODO
+
+- [ ] 测试日志能否记录
