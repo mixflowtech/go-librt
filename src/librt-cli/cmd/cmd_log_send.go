@@ -60,7 +60,7 @@ func init() {
 
 var logSendCmd = &cobra.Command{
 	Use:   "send [message] [log server, fmprpc://]",
-	Short: "Execute JavaScript in Clout",
+	Short: "Send log message to server",
 	Long:  ``,
 	Args:  cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {

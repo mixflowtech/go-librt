@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sybrexsys/RapidMQ/queue/internal/logging"
+	"github.com/mixflowtech/go-librt/libqueue/internal/logging"
 )
 
 const (

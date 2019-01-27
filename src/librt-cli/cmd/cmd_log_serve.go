@@ -16,7 +16,7 @@ func init() {
 
 var logServeCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Execute JavaScript in Clout",
+	Short: "Start log collector server",
 	Long:  ``,
 	Args:  cobra.MaximumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {

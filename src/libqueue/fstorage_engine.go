@@ -13,7 +13,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/sybrexsys/RapidMQ/queue/internal/mmap"
+	"github.com/mixflowtech/go-librt/libqueue/internal/mmap"
 )
 
 var startTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)

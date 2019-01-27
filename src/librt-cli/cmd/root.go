@@ -24,6 +24,7 @@ func init() {
 	*/
 	rootCmd.Flags().StringVarP(&bashCompletionTo, "bash-completion", "b", "", "generate bash completion file")
 	rootCmd.AddCommand(logCmd)
+	rootCmd.AddCommand(queueCmd)
 }
 
 var rootCmd = &cobra.Command{

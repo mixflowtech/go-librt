@@ -1,3 +1,13 @@
+# libqueue 
+
+主体代码来自 github.com/sybrexsys/RapidMQ/queue ， 在 Apache 2.0 协议下使用。
+
+- [ ] 改造日志服务到 go-librt/logging 
+- [ ] 验证是否允许多进程访问
+
+
+-----------
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/sybrexsys/RapidMQ)](https://goreportcard.com/report/github.com/sybrexsys/RapidMQ)
 [![Build Status](https://travis-ci.org/sybrexsys/RapidMQ.svg?branch=master)](https://travis-ci.org/sybrexsys/RapidMQ)
 [![Coverage Status](https://coveralls.io/repos/github/sybrexsys/RapidMQ/badge.svg?branch=master)](https://coveralls.io/github/sybrexsys/RapidMQ?branch=master)
