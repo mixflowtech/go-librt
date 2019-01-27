@@ -1,4 +1,4 @@
-@namespace("mixflow.engine.1")
+@namespace("mxengine.1")
 protocol log {
 
   @go("nostring")

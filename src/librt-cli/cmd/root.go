@@ -23,7 +23,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&ardFormat, "format", "f", "", "force format (\"yaml\", \"json\", or \"xml\")")
 	*/
 	rootCmd.Flags().StringVarP(&bashCompletionTo, "bash-completion", "b", "", "generate bash completion file")
-	rootCmd.AddCommand(loggerCmd)
+	rootCmd.AddCommand(logCmd)
 }
 
 var rootCmd = &cobra.Command{

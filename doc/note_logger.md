@@ -23,7 +23,7 @@
 
 ### *Client*
 
-> $(CMD) log send -d --level <debug|info|notice|warn|error|critical|fatal> $message --to $remote_host
+> $(CMD) log send -d --level <debug|info|notice|warn|error|critical|fatal> $message $remote_host
 
 如果没有给出 remote host, 则使用本地默认的日志服务，进行输出。
 
