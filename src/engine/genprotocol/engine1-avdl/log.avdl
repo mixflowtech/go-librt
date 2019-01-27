@@ -1,0 +1,17 @@
+@namespace("mixflow.engine.1")
+protocol log {
+
+  @go("nostring")
+  enum LogLevel {
+    NONE_0,
+    DEBUG_1,
+    INFO_2,
+    NOTICE_3,
+    WARN_4,
+    ERROR_5,
+    CRITICAL_6,
+    FATAL_7
+  }
+
+  void doLog(int sessionID, LogLevel level, string message);  // Change name for better grep...
+}
