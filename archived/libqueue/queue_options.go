@@ -4,8 +4,6 @@ import "time"
 
 // StorageOptions holds the optional parameters for the disk storage of the messages.
 type StorageOptions struct {
-
-	// 以下选项均未使用，为接口保留
 	// maximum size of the storage's data files
 	MaxDataFileSize int64
 

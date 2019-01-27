@@ -1,4 +1,4 @@
-# Note of Mockey
+# Mockey
 
 > Mockey, https://github.com/vektra/mockery 是一个能够从Go Interface 中生成 Mock 代码的工具
 
