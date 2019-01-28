@@ -53,8 +53,7 @@ var quePushCmd = &cobra.Command{
 		opt := queue.DefaultQueueOptions
 		opt.InputTimeOut = 0
 		// TODO: pass log to -> ... , when log porting finished.
-		// Give a TestWorkerFactory{}
-		q, err := queue.CreateQueue("Test", TestFolder, nil, &opt)
+		q, err := queue.CreateQueue("Test", TestFolder+"bblot", log, &opt)
 		if err != nil {
 			log.Fatalf("Cannot create storage: %s", err)
 		}
@@ -68,8 +67,8 @@ var quePushCmd = &cobra.Command{
 			}
 		}
 		*/
-		saved := q.Insert([]byte(message))
-		if !saved {
+		err = q.Insert([]byte(message))
+		if err != nil  {
 			log.Fatalf("Cannot insert date")
 		}
 		q.Close()

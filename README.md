@@ -6,7 +6,7 @@ Golang 版本的公共运行时框架，包括
 - [X] 基于MesagePack 的 RPC 机制
 - [X] 日志机制
 - [ ] 内置了本地数据队列
-- [ ] ECMA / JS 解释器
+- [ ] ECMA / JS 解释器 （暂缓）
 
 
 ## Build

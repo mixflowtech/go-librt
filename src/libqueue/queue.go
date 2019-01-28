@@ -3,18 +3,29 @@ package queue
 //TODO: for empty list skip size of theindex file
 
 import (
+	"encoding/binary"
+	"errors"
+	"fmt"
+
+	//"encoding/json"
+	///"fmt"
 	"io"
+	"log"
 	"time"
+
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/mixflowtech/go-librt/logger"
 )
 
+var startTime = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+
 // QueueItem is elementh of the queue
 type QueueItem struct { // nolint
-	idx     StorageIdx
-	ID      StorageIdx
+	//idx     StorageIdx
+	//ID      StorageIdx
 	Stream  io.ReadSeeker
-	storage storageProcessing
+	//storage storageProcessing
 }
 
 //Queue is a base structure for managing of the messages
@@ -25,6 +36,7 @@ type Queue struct {
 	newMessage   chan struct{}
 	stopEvent    chan struct{}
 	stopedHandle chan struct{}
+	db 			 *bolt.DB
 	//storage      *fileStorage
 	//memory       *queueMemory
 	//factory      WorkerFactory
@@ -38,8 +50,37 @@ type newMessageNotificator interface {
 	newMessageNotification()
 }
 
+// itob returns an 8-byte big endian representation of v.
+func itob(v int) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
+}
+
+func uitob(v uint64) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
+}
+
 func CreateQueue(Name, StoragePath string, Log logger.Logger, Options *Options) (*Queue, error) {
-	return nil, nil
+	db, err := bolt.Open(StoragePath, 0666, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp := &Queue{
+		total:        0,
+		stopedHandle: make(chan struct{}),
+		newMessage:   make(chan struct{}, 1),
+		log:          Log,
+		options:      Options,
+		name:         Name,
+		stopEvent:    make(chan struct{}),
+		lastTimeGC:   time.Since(startTime),
+		db:			  db,
+	}
+	return tmp, nil
 }
 
 // Queue as newMessageNotificator
@@ -53,20 +94,50 @@ func (q *Queue) newMessageNotification() {
 // Member function of Queue
 //Count returns the count of the messages in the queue
 func (q *Queue) Count() uint64 {
-	return 0
-	//return q.storage.Count() + q.memory.Count()
+	var count uint64 = 0
+
+	if err := q.db.View(func(tx *bolt.Tx) error {
+		// Create a new bucket.
+		b := tx.Bucket([]byte(q.name))
+		if b == nil {
+			return errors.New("Bucked not found.")
+		}
+		count = b.Sequence()
+		return nil
+	}); err != nil {
+		log.Fatal(err)
+	}
+	return count
 }
 
 // Insert appends the message into the queue. In depends of the timeout's option either is trying
 // to write message to the disk or is trying to process this message in the memory and writing to the
 // disk only if timeout is expired shortly. Returns false if aren't processing / writing of the message
 // in the during of the timeout or has some problems with  writing to disk
-func (q *Queue) Insert(buf []byte) bool {
+func (q *Queue) Insert(buf []byte) error {
 	return q.insert(buf, nil)
 	// after timeout, then write to disk ? as archived/libqueue?
 }
 
-func (q *Queue) insert(buf []byte, ch chan bool) bool {
+func (q *Queue) insert(buf []byte, ch chan bool) error {
+	// FIXME: add batch insert mode.
+	// in bbolt , use batch update
+	if err := q.db.Update(func(tx *bolt.Tx) error {
+		// Create a new bucket.
+		b, err := tx.CreateBucketIfNotExists([]byte(q.name))
+		if err != nil {
+			return err
+		}
+
+		id, _ := b.NextSequence()
+		rec_no := int(id)
+		// Persist bytes to users bucket.
+		return b.Put(itob(rec_no), buf)
+	}); err != nil {
+		log.Fatal(err)
+	}
+
+
 	if ch == nil {
 		/*
 		ID, err := q.storage.Put(buf)
@@ -100,12 +171,40 @@ func (q *Queue) insert(buf []byte, ch chan bool) bool {
 	ch <- err == nil
 	return err == nil
 	*/
-	return false
+	return nil
+}
+
+func (q *Queue) Fetch(offset uint64, count uint64) error {
+	// FIXME:  unstable API
+	if err := q.db.View(func(tx *bolt.Tx) error {
+		// Create a new bucket.
+		b := tx.Bucket([]byte(q.name))
+		if b == nil {
+			return errors.New("Bucked not found.")
+		}
+		// Create a cursor for iteration.
+		c := b.Cursor()
+
+		// Iterate over items in sorted key order. This starts from the
+		// first key/value pair and updates the k/v variables to the
+		// next key/value on each iteration.
+		//
+		// The loop finishes at the end of the cursor when a nil key is returned.
+		for k, v := c.Seek(uitob(offset)); k != nil; k, v = c.Next() {
+			fmt.Printf("- %s.\n", v)
+		}
+
+		return nil
+	}); err != nil {
+		log.Fatal(err)
+	}
+	return nil
 }
 
 func (q *Queue) close() {
-	q.stopEvent <- struct{}{}
-	<-q.stopedHandle
+	//q.stopEvent <- struct{}{}
+	//<-q.stopedHandle
+	q.db.Close()
 }
 
 /*

@@ -2,72 +2,22 @@ package cmd
 
 import (
 	"fmt"
-	queue "github.com/mixflowtech/go-librt/libqueue"
+	"github.com/mixflowtech/go-librt/libqueue"
 	"github.com/mixflowtech/go-librt/logger"
 	"github.com/spf13/cobra"
-	"io"
 	"os"
 	"runtime"
-	"sync/atomic"
 )
 
-
-type TestWorker struct {
-	id queue.WorkerID
-}
-
-type TestWorkerFactory struct {
-	id queue.WorkerID
-}
-
-func (n *TestWorkerFactory) CreateWorker() (queue.Worker, error) {
-	return &TestWorker{
-		id: queue.WorkerID(atomic.AddUint64((*uint64)(&n.id), 1) - 1),
-	}, nil
-}
-
-func (n *TestWorkerFactory) CanCreateWorkers() bool {
-	return true
-}
-
-func (n *TestWorkerFactory) NeedTimeoutProcessing() bool {
-	return false
-}
-
-func (n *TestWorkerFactory) Close() {
-}
-
-func (n *TestWorker) ProcessMessage(msg *queue.QueueItem) int {
-	start, _ := msg.Stream.Seek(0, io.SeekCurrent)
-	size, _ := msg.Stream.Seek(0, io.SeekEnd)
-	size -= start
-	msg.Stream.Seek(start, io.SeekStart)
-	buf := make([]byte, size)
-	msg.Stream.Read(buf)
-	if string(buf) != "error" {
-		return queue.ProcessedSuccessful
-	}
-	return queue.ProcessedWithError
-}
-
-func (n *TestWorker) ProcessTimeout() int {
-	return queue.ProcessedSuccessful
-}
-
-func (n *TestWorker) GetID() queue.WorkerID {
-	return n.id
-}
-
-func (n *TestWorker) Close() {
-}
-
-
 // TODO: move global flags to ...
+var g_offset, g_count uint64
 
 func init() {
 	// logSendCmd.Flags().BoolVarP(&g_flagDebug, "debug", "d", false, "debug mode (default is off)")
 	// logSendCmd.Flags().StringVarP(&g_logLevel, "level", "l", "info", "log level of the message, in { debug, info, notice, warn, error, critical, fatal }, (default is info)")
 	// logSendCmd.Flags().StringVarP(&g_logTo, "output", "o", "", "log to file (defaults to stderr)")
+	queListCmd.Flags().Uint64VarP(&g_offset, "offset", "l", 0, "Where to start")
+	queListCmd.Flags().Uint64VarP(&g_count, "count", "n", 1000, "Number item(s) listed.( default 1000 )")
 }
 
 var queListCmd = &cobra.Command{
@@ -81,9 +31,9 @@ var queListCmd = &cobra.Command{
 		log.Configure("", true, "")
 
 		// get folder
+
 		var TestFolder string
 		// var logFolder string
-
 		tmp := normalizeFilePath(os.TempDir())
 		if runtime.GOOS == "windows" {
 			TestFolder = tmp + "queue\\"
@@ -99,13 +49,16 @@ var queListCmd = &cobra.Command{
 		opt := queue.DefaultQueueOptions
 		opt.InputTimeOut = 0
 		// TODO: pass log to -> ... , when log porting finished.
+
 		// Give a TestWorkerFactory{}
-		q, err := queue.CreateQueue("Test", TestFolder, nil, &TestWorkerFactory{}, &opt)
+		q, err := queue.CreateQueue("Test", TestFolder+"bblot", log, &opt)
 		if err != nil {
 			log.Fatalf("Cannot create storage: %s", err)
 		}
-		fmt.Printf("count %d\n", q.Count())
-
+		fmt.Printf("total (history) count %d\n", q.Count())
 		//q.Insert([]byte("dkljfsdalkfjsd;aj"))
+		q.Fetch(g_offset, g_count);
+
+		q.Close()
 	},
 }
