@@ -57,7 +57,10 @@ var queListCmd = &cobra.Command{
 		}
 		fmt.Printf("total (history) count %d\n", q.Count())
 		//q.Insert([]byte("dkljfsdalkfjsd;aj"))
-		q.Fetch(g_offset, g_count);
+		q.Fetch(g_offset, g_count, func(buf []byte) error {
+			fmt.Printf("- %s.\n", buf)
+			return nil
+		});
 
 		q.Close()
 	},

@@ -5,7 +5,7 @@ package queue
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
+	//"fmt"
 
 	//"encoding/json"
 	///"fmt"
@@ -174,7 +174,9 @@ func (q *Queue) insert(buf []byte, ch chan bool) error {
 	return nil
 }
 
-func (q *Queue) Fetch(offset uint64, count uint64) error {
+type FetchItemCb func(buf []byte) error
+
+func (q *Queue) Fetch(offset uint64, count uint64, cb FetchItemCb) error {
 	// FIXME:  unstable API
 	if err := q.db.View(func(tx *bolt.Tx) error {
 		// Create a new bucket.
@@ -191,7 +193,10 @@ func (q *Queue) Fetch(offset uint64, count uint64) error {
 		//
 		// The loop finishes at the end of the cursor when a nil key is returned.
 		for k, v := c.Seek(uitob(offset)); k != nil; k, v = c.Next() {
-			fmt.Printf("- %s.\n", v)
+			cb_e := cb(v)
+			if cb_e != nil {
+				return cb_e
+			}
 		}
 
 		return nil
